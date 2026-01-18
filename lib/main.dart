@@ -1,8 +1,12 @@
-// lib/main.dart
+// ============================================
+// FILE 1: lib/main.dart (UPDATED - Replace entire file)
+// ============================================
+
 import 'package:flutter/material.dart';
 import 'screens/login_page.dart';
 import 'superadmin/super_admin_dashboard.dart';
 import 'hospitaladmin/hospital_admin_dashboard.dart';
+import 'hospitaladmin/hospital_admin_signup_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -232,6 +236,13 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
   bool _obscurePassword = true;
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -317,7 +328,7 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
   }
 }
 
-// Hospital Admin Login Page
+// Hospital Admin Login Page (UPDATED)
 class HospitalAdminLoginPage extends StatefulWidget {
   const HospitalAdminLoginPage({Key? key}) : super(key: key);
 
@@ -329,6 +340,13 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +426,47 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
                 ),
                 child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
+              const SizedBox(height: 24),
+              
+              // Divider
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey[400])),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('OR', style: TextStyle(color: Colors.grey[600])),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey[400])),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Register Hospital Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don't have an account? ",
+                    style: TextStyle(color: Colors.grey[600], fontSize: 15),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HospitalAdminSignUpPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Register Hospital',
+                      style: TextStyle(
+                        color: Color(0xFF4FC3F7),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -415,3 +474,11 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
     );
   }
 }
+
+
+// ============================================
+// FILE 2: lib/hospitaladmin/hospital_admin_signup_page.dart (NEW FILE - Create this)
+// ============================================
+
+// Copy the entire hospital_admin_signup_page.dart file content you already have above
+// This file is already complete from document index 7
