@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class AddHospitalPage extends StatefulWidget {
-  const AddHospitalPage({Key? key}) : super(key: key);
+  const AddHospitalPage({super.key});
 
   @override
   State<AddHospitalPage> createState() => _AddHospitalPageState();

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'appointment_form_page.dart';
+import '../services/firebase_database_service.dart';
 
 class FindDoctorsPage extends StatefulWidget {
-  const FindDoctorsPage({Key? key}) : super(key: key);
+  const FindDoctorsPage({super.key});
 
   @override
   State<FindDoctorsPage> createState() => _FindDoctorsPageState();
@@ -12,6 +13,7 @@ class _FindDoctorsPageState extends State<FindDoctorsPage> {
   String? _selectedCity;
   String? _selectedHospital;
   String _selectedSpecialty = 'All';
+  final _dbService = FirebaseDatabaseService();
 
   // Sri Lankan Cities
   final List<String> _cities = [

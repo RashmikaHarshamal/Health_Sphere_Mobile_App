@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class HospitalSettingsPage extends StatefulWidget {
-  const HospitalSettingsPage({Key? key}) : super(key: key);
+  const HospitalSettingsPage({super.key});
 
   @override
   State<HospitalSettingsPage> createState() => _HospitalSettingsPageState();
@@ -341,7 +341,7 @@ class _HospitalSettingsPageState extends State<HospitalSettingsPage> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF4FC3F7),
+            activeThumbColor: const Color(0xFF4FC3F7),
           ),
         ],
       ),

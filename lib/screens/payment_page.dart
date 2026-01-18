@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class PaymentPage extends StatefulWidget {
   final Map<String, dynamic> appointmentDetails;
 
-  const PaymentPage({Key? key, required this.appointmentDetails}) : super(key: key);
+  const PaymentPage({super.key, required this.appointmentDetails});
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -12,7 +12,7 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   String _paymentOption = 'Pay at Hospital';
   String _paymentMethod = 'Cash';
-  double _hospitalCharge = 500.0; // Rs. 500 hospital charge
+  final double _hospitalCharge = 500.0; // Rs. 500 hospital charge
 
   double get _doctorFee {
     String feeString = widget.appointmentDetails['doctorFee'];

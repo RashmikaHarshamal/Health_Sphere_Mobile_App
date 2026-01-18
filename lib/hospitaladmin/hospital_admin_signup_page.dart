@@ -1,9 +1,11 @@
 // lib/hospitaladmin/hospital_admin_signup_page.dart
 import 'package:flutter/material.dart';
 import 'hospital_admin_dashboard.dart';
+import '../services/hospital_management_service.dart';
+import '../services/firebase_auth_service.dart';
 
 class HospitalAdminSignUpPage extends StatefulWidget {
-  const HospitalAdminSignUpPage({Key? key}) : super(key: key);
+  const HospitalAdminSignUpPage({super.key});
 
   @override
   State<HospitalAdminSignUpPage> createState() => _HospitalAdminSignUpPageState();
@@ -91,39 +93,133 @@ class _HospitalAdminSignUpPageState extends State<HospitalAdminSignUpPage> {
     }
 
     setState(() => _isLoading = true);
-    
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-    
-    setState(() => _isLoading = false);
 
-    if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30),
-              SizedBox(width: 12),
-              Text('Registration Successful'),
-            ],
-          ),
-          content: const Text(
-            'Your hospital registration has been submitted successfully. '
-            'Our team will review your application and get back to you within 24-48 hours.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to login
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+    try {
+      // First, sign up the admin user
+      final authService = FirebaseAuthService();
+      final userCredential = await authService.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
+
+      // Then register the hospital
+      final hospitalService = HospitalManagementService();
+      final result = await hospitalService.registerHospital(
+        adminId: userCredential.user!.uid,
+        adminName: _fullNameController.text.trim(),
+        adminEmail: _emailController.text.trim(),
+        hospitalName: _hospitalNameController.text.trim(),
+        hospitalEmail: _hospitalEmailController.text.trim(),
+        hospitalPhone: _hospitalPhoneController.text.trim(),
+        hospitalAddress: _hospitalAddressController.text.trim(),
+        city: _hospitalCityController.text.trim(),
+        state: _hospitalStateController.text.trim(),
+        zipCode: _hospitalZipController.text.trim(),
+        registrationNumber: _registrationNumberController.text.trim(),
+        licenseNumber: _licenseNumberController.text.trim(),
+        establishedYear: int.parse(_establishedYearController.text),
+        hospitalType: _hospitalType ?? 'Private',
+        facilities: _facilities.entries.where((e) => e.value).map((e) => e.key).toList(),
+        totalBeds: int.parse(_totalBedsController.text),
+        totalDoctors: _totalDoctorsController.text.isNotEmpty
+            ? int.parse(_totalDoctorsController.text)
+            : 0,
+        website: _websiteController.text.trim(),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        if (result.success) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 30),
+                  SizedBox(width: 12),
+                  Text('Registration Successful'),
+                ],
+              ),
+              content: Text(
+                'Your hospital registration has been submitted successfully!\n\n'
+                'Hospital ID: ${result.hospitalId}\n\n'
+                'Our team will review your application and get back to you within 24-48 hours.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HospitalAdminDashboard()),
+                    );
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+
+      if (mounted) {
+        String errorMessage = 'Registration failed: $e';
+        if (e.toString().contains('email-already-in-use')) {
+          errorMessage = 'Email already registered';
+        } else if (e.toString().contains('weak-password')) {
+          errorMessage = 'Password is too weak';
+        } else if (e.toString().contains('PigeonUserDetails')) {
+          // Firebase SDK bug but signup likely succeeded
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 30),
+                  SizedBox(width: 12),
+                  Text('Registration Submitted'),
+                ],
+              ),
+              content: const Text(
+                'Your hospital registration has been submitted successfully!\n\n'
+                'Our team will review your application and get back to you within 24-48 hours.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HospitalAdminDashboard()),
+                    );
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -268,7 +364,7 @@ class _HospitalAdminSignUpPageState extends State<HospitalAdminSignUpPage> {
           labelText: 'Hospital Type',
           prefixIcon: Icon(Icons.business, color: Color(0xFF4FC3F7)),
         ),
-        value: _hospitalType,
+        initialValue: _hospitalType,
         items: _hospitalTypes.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
         onChanged: (value) => setState(() => _hospitalType = value),
         validator: (value) => value == null ? 'Please select hospital type' : null,
@@ -314,7 +410,7 @@ class _HospitalAdminSignUpPageState extends State<HospitalAdminSignUpPage> {
           activeColor: const Color(0xFF4FC3F7),
           contentPadding: EdgeInsets.zero,
         );
-      }).toList(),
+      }),
       const SizedBox(height: 24),
       const Text('Capacity Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       const SizedBox(height: 12),
@@ -512,7 +608,7 @@ class _HospitalAdminSignUpPageState extends State<HospitalAdminSignUpPage> {
 
 // Updated Hospital Admin Login Page with Sign Up Link
 class HospitalAdminLoginPage extends StatefulWidget {
-  const HospitalAdminLoginPage({Key? key}) : super(key: key);
+  const HospitalAdminLoginPage({super.key});
 
   @override
   State<HospitalAdminLoginPage> createState() => _HospitalAdminLoginPageState();

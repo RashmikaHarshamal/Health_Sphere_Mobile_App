@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firebase_database_service.dart';
 
 // Add this import to your home_page.dart file:
 // import 'vaccination_page.dart';
 
 class VaccinationPage extends StatefulWidget {
-  const VaccinationPage({Key? key}) : super(key: key);
+  const VaccinationPage({super.key});
 
   @override
   State<VaccinationPage> createState() => _VaccinationPageState();
@@ -12,7 +14,12 @@ class VaccinationPage extends StatefulWidget {
 
 class _VaccinationPageState extends State<VaccinationPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _dbService = FirebaseDatabaseService();
+  final _user = FirebaseAuth.instance.currentUser;
+  
   String _selectedAgeGroup = 'All Ages';
+  List<Map<String, dynamic>> _userVaccinations = [];
+  bool _isLoading = true;
 
   final List<String> _ageGroups = [
     'All Ages',
@@ -22,6 +29,32 @@ class _VaccinationPageState extends State<VaccinationPage> with SingleTickerProv
     'Adults (19-64 years)',
     'Seniors (65+ years)',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadVaccinations();
+  }
+
+  Future<void> _loadVaccinations() async {
+    if (_user == null) return;
+
+    try {
+      final vaccinationRecords = await _dbService.getVaccinationRecords(_user.uid);
+      setState(() {
+        _userVaccinations = vaccinationRecords;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading vaccinations: $e')),
+        );
+      }
+    }
+  }
 
   final List<Map<String, dynamic>> _vaccines = [
     {
@@ -181,12 +214,6 @@ class _VaccinationPageState extends State<VaccinationPage> with SingleTickerProv
       'schedule': ['Primary series + annual boosters'],
     },
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
 
   @override
   void dispose() {

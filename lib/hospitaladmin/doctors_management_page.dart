@@ -4,7 +4,7 @@ import 'add_doctor_page.dart';
 import 'doctor_details_page.dart';
 
 class DoctorsManagementPage extends StatefulWidget {
-  const DoctorsManagementPage({Key? key}) : super(key: key);
+  const DoctorsManagementPage({super.key});
 
   @override
   State<DoctorsManagementPage> createState() => _DoctorsManagementPageState();

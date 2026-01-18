@@ -5,7 +5,7 @@ import 'analytics_page.dart';
 import 'settings_page.dart';
 
 class SuperAdminDashboard extends StatefulWidget {
-  const SuperAdminDashboard({Key? key}) : super(key: key);
+  const SuperAdminDashboard({super.key});
 
   @override
   State<SuperAdminDashboard> createState() => _SuperAdminDashboardState();
@@ -134,7 +134,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
 }
 
 class DashboardHome extends StatelessWidget {
-  const DashboardHome({Key? key}) : super(key: key);
+  const DashboardHome({super.key});
 
   @override
   Widget build(BuildContext context) {
