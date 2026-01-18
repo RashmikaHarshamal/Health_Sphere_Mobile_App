@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ArticleDetailsPage extends StatefulWidget {
   final Map<String, dynamic> article;
 
-  const ArticleDetailsPage({Key? key, required this.article}) : super(key: key);
+  const ArticleDetailsPage({super.key, required this.article});
 
   @override
   State<ArticleDetailsPage> createState() => _ArticleDetailsPageState();

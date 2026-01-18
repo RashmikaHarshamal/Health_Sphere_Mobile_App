@@ -4,7 +4,7 @@ import '../models/user_model.dart';
 import 'login_page.dart';
 
 class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({Key? key}) : super(key: key);
+  const UserProfilePage({super.key});
 
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
@@ -12,7 +12,7 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   late User? _currentUser;
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   void initState() {
@@ -262,7 +262,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 class EditUserProfilePage extends StatefulWidget {
   final User user;
 
-  const EditUserProfilePage({Key? key, required this.user}) : super(key: key);
+  const EditUserProfilePage({super.key, required this.user});
 
   @override
   State<EditUserProfilePage> createState() => _EditUserProfilePageState();
@@ -371,7 +371,7 @@ class _EditUserProfilePageState extends State<EditUserProfilePage> {
 
             // Gender Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedGender,
+              initialValue: _selectedGender,
               decoration: const InputDecoration(
                 labelText: 'Gender',
                 hintText: 'Select your gender',

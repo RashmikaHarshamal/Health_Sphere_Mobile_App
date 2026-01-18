@@ -5,7 +5,7 @@ import 'appointments_management_page.dart';
 import 'hospital_settings_page.dart';
 
 class HospitalAdminDashboard extends StatefulWidget {
-  const HospitalAdminDashboard({Key? key}) : super(key: key);
+  const HospitalAdminDashboard({super.key});
 
   @override
   State<HospitalAdminDashboard> createState() => _HospitalAdminDashboardState();
@@ -135,7 +135,7 @@ class _HospitalAdminDashboardState extends State<HospitalAdminDashboard> {
 }
 
 class HospitalDashboardHome extends StatelessWidget {
-  const HospitalDashboardHome({Key? key}) : super(key: key);
+  const HospitalDashboardHome({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +248,7 @@ class HospitalDashboardHome extends StatelessWidget {
                 ),
               ],
             ),
-          )).toList(),
+          )),
         ],
       ),
     );

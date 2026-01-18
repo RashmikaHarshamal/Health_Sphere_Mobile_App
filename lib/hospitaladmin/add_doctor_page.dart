@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class AddDoctorPage extends StatefulWidget {
-  const AddDoctorPage({Key? key}) : super(key: key);
+  const AddDoctorPage({super.key});
 
   @override
   State<AddDoctorPage> createState() => _AddDoctorPageState();
@@ -49,7 +49,7 @@ class _AddDoctorPageState extends State<AddDoctorPage> {
             _buildSection('Professional Information', [
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(labelText: 'Department', prefixIcon: Icon(Icons.domain)),
-                value: _selectedDepartment,
+                initialValue: _selectedDepartment,
                 items: _departments.map((dept) => DropdownMenuItem(value: dept, child: Text(dept))).toList(),
                 onChanged: (value) => setState(() => _selectedDepartment = value),
                 validator: (value) => value == null ? 'Please select a department' : null,
@@ -75,7 +75,11 @@ class _AddDoctorPageState extends State<AddDoctorPage> {
                     selected: isSelected,
                     onSelected: (selected) {
                       setState(() {
-                        if (selected) _selectedSchedule.add(day); else _selectedSchedule.remove(day);
+                        if (selected) {
+                          _selectedSchedule.add(day);
+                        } else {
+                          _selectedSchedule.remove(day);
+                        }
                       });
                     },
                     selectedColor: const Color(0xFF4FC3F7),
@@ -168,7 +172,7 @@ class _AddDoctorPageState extends State<AddDoctorPage> {
 
 // lib/hospitaladmin/appointments_management_page.dart
 class AppointmentsManagementPage extends StatefulWidget {
-  const AppointmentsManagementPage({Key? key}) : super(key: key);
+  const AppointmentsManagementPage({super.key});
 
   @override
   State<AppointmentsManagementPage> createState() => _AppointmentsManagementPageState();

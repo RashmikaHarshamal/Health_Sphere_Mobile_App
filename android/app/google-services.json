@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "12179820246",
-    "project_id": "healthsphere-be92b",
-    "storage_bucket": "healthsphere-be92b.firebasestorage.app"
+    "project_number": "239170796926",
+    "project_id": "healthsphere-6eb0b",
+    "storage_bucket": "healthsphere-6eb0b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:12179820246:android:5227777eeaca2dcbc44377",
+        "mobilesdk_app_id": "1:239170796926:android:760ffde6e128b586ac872f",
         "android_client_info": {
           "package_name": "com.example.flutter_application_3"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAJDRYf3rpell3v6H9TQuuX_4LnMkDk1A4"
+          "current_key": "AIzaSyCROJcZ8lqKdGrerWmARWp20yTxLTLnpjw"
         }
       ],
       "services": {

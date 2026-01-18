@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class HospitalDetailsPage extends StatelessWidget {
   final Map<String, dynamic> hospital;
 
-  const HospitalDetailsPage({Key? key, required this.hospital}) : super(key: key);
+  const HospitalDetailsPage({super.key, required this.hospital});
 
   @override
   Widget build(BuildContext context) {

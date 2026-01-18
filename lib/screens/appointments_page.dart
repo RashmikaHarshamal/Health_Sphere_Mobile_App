@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'find_doctors_page.dart';
+import '../services/firebase_database_service.dart';
 
 class AppointmentsPage extends StatefulWidget {
-  const AppointmentsPage({Key? key}) : super(key: key);
+  const AppointmentsPage({super.key});
 
   @override
   State<AppointmentsPage> createState() => _AppointmentsPageState();
@@ -10,87 +12,43 @@ class AppointmentsPage extends StatefulWidget {
 
 class _AppointmentsPageState extends State<AppointmentsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _dbService = FirebaseDatabaseService();
+  final _user = FirebaseAuth.instance.currentUser;
   
-  final List<Map<String, dynamic>> _upcomingAppointments = [
-    {
-      'doctor': 'Dr. Sarah Johnson',
-      'specialty': 'Cardiologist',
-      'date': 'Today',
-      'time': '10:30 AM',
-      'icon': Icons.favorite,
-      'color': Colors.red,
-      'location': 'City Hospital, Room 302',
-      'type': 'In-person'
-    },
-    {
-      'doctor': 'Dr. Michael Chen',
-      'specialty': 'General Physician',
-      'date': 'Tomorrow',
-      'time': '2:00 PM',
-      'icon': Icons.local_hospital,
-      'color': Colors.blue,
-      'location': 'Virtual Consultation',
-      'type': 'Video Call'
-    },
-    {
-      'doctor': 'Dr. Emily Davis',
-      'specialty': 'Dermatologist',
-      'date': 'Jan 20',
-      'time': '11:00 AM',
-      'icon': Icons.healing,
-      'color': Colors.purple,
-      'location': 'Wellness Center, Floor 2',
-      'type': 'In-person'
-    },
-    {
-      'doctor': 'Dr. Robert Wilson',
-      'specialty': 'Orthopedic',
-      'date': 'Jan 22',
-      'time': '3:30 PM',
-      'icon': Icons.accessibility,
-      'color': Colors.orange,
-      'location': 'Sports Clinic',
-      'type': 'In-person'
-    },
-  ];
-
-  final List<Map<String, dynamic>> _pastAppointments = [
-    {
-      'doctor': 'Dr. Lisa Anderson',
-      'specialty': 'Dentist',
-      'date': 'Jan 10',
-      'time': '9:00 AM',
-      'icon': Icons.medical_services,
-      'color': Colors.teal,
-      'location': 'Dental Care Center',
-      'status': 'Completed'
-    },
-    {
-      'doctor': 'Dr. James Brown',
-      'specialty': 'ENT Specialist',
-      'date': 'Jan 5',
-      'time': '4:00 PM',
-      'icon': Icons.hearing,
-      'color': Colors.indigo,
-      'location': 'ENT Clinic',
-      'status': 'Completed'
-    },
-    {
-      'doctor': 'Dr. Maria Garcia',
-      'specialty': 'Pediatrician',
-      'date': 'Dec 28',
-      'time': '1:00 PM',
-      'icon': Icons.child_care,
-      'color': Colors.pink,
-      'location': 'Children\'s Hospital',
-      'status': 'Completed'
-    },
-  ];
+  List<Map<String, dynamic>> _upcomingAppointments = [];
+  List<Map<String, dynamic>> _pastAppointments = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadAppointments();
+  }
+
+  Future<void> _loadAppointments() async {
+    if (_user == null) return;
+    
+    try {
+      final appointments = await _dbService.getPatientAppointments(_user.uid);
+      
+      setState(() {
+        _upcomingAppointments = appointments
+            .where((apt) => apt['status'] == 'scheduled')
+            .toList();
+        _pastAppointments = appointments
+            .where((apt) => apt['status'] == 'completed')
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading appointments: $e')),
+        );
+      }
+    }
   }
 
   @override

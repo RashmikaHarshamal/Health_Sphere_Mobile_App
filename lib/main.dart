@@ -1,19 +1,28 @@
-// ============================================
-// FILE 1: lib/main.dart (UPDATED - Replace entire file)
-// ============================================
-
+// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'screens/login_page.dart';
 import 'superadmin/super_admin_dashboard.dart';
 import 'hospitaladmin/hospital_admin_dashboard.dart';
-import 'hospitaladmin/hospital_admin_signup_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Firebase already initialized (common on hot reload)
+    if (!e.toString().contains('duplicate-app')) {
+      rethrow;
+    }
+  }
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +53,7 @@ class MyApp extends StatelessWidget {
 
 // Admin Selection Page
 class AdminSelectionPage extends StatelessWidget {
-  const AdminSelectionPage({Key? key}) : super(key: key);
+  const AdminSelectionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +233,7 @@ class AdminSelectionPage extends StatelessWidget {
 
 // Super Admin Login Page
 class SuperAdminLoginPage extends StatefulWidget {
-  const SuperAdminLoginPage({Key? key}) : super(key: key);
+  const SuperAdminLoginPage({super.key});
 
   @override
   State<SuperAdminLoginPage> createState() => _SuperAdminLoginPageState();
@@ -234,13 +243,6 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,9 +330,9 @@ class _SuperAdminLoginPageState extends State<SuperAdminLoginPage> {
   }
 }
 
-// Hospital Admin Login Page (UPDATED)
+// Hospital Admin Login Page
 class HospitalAdminLoginPage extends StatefulWidget {
-  const HospitalAdminLoginPage({Key? key}) : super(key: key);
+  const HospitalAdminLoginPage({super.key});
 
   @override
   State<HospitalAdminLoginPage> createState() => _HospitalAdminLoginPageState();
@@ -340,13 +342,6 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -426,47 +421,6 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
                 ),
                 child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(height: 24),
-              
-              // Divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey[400])),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('OR', style: TextStyle(color: Colors.grey[600])),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey[400])),
-                ],
-              ),
-              const SizedBox(height: 24),
-              
-              // Register Hospital Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Don't have an account? ",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 15),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HospitalAdminSignUpPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Register Hospital',
-                      style: TextStyle(
-                        color: Color(0xFF4FC3F7),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
@@ -474,11 +428,3 @@ class _HospitalAdminLoginPageState extends State<HospitalAdminLoginPage> {
     );
   }
 }
-
-
-// ============================================
-// FILE 2: lib/hospitaladmin/hospital_admin_signup_page.dart (NEW FILE - Create this)
-// ============================================
-
-// Copy the entire hospital_admin_signup_page.dart file content you already have above
-// This file is already complete from document index 7

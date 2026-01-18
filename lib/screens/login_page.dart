@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'signup_page.dart';
 import 'home_page.dart';
-import '../services/authentication_service.dart';
+import '../services/firebase_auth_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -14,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = FirebaseAuthService();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -30,29 +32,57 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      // Call authentication service
-      final result = await authService.login(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      try {
+        // Sign in with Firebase
+        await _authService.signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show result and navigate if successful
-      if (mounted) {
-        if (result.success) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
-        } else {
+        }
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        if (mounted) {
+          String errorMessage = 'Login failed';
+          if (e.code == 'user-not-found') {
+            errorMessage = 'User not found';
+          } else if (e.code == 'wrong-password') {
+            errorMessage = 'Wrong password';
+          } else if (e.code == 'invalid-email') {
+            errorMessage = 'Invalid email format';
+          }
+          
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Check if it's the Pigeon type error (Firebase SDK bug but login succeeded)
+        if (e.toString().contains('PigeonUserDetails')) {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          }
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       }

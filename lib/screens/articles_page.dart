@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'article_details_page.dart';
+import '../services/firebase_database_service.dart';
 
 class ArticlesPage extends StatefulWidget {
-  const ArticlesPage({Key? key}) : super(key: key);
+  const ArticlesPage({super.key});
 
   @override
   State<ArticlesPage> createState() => _ArticlesPageState();
@@ -10,6 +11,10 @@ class ArticlesPage extends StatefulWidget {
 
 class _ArticlesPageState extends State<ArticlesPage> {
   String _selectedCategory = 'All';
+  final _dbService = FirebaseDatabaseService();
+  
+  List<Map<String, dynamic>> _allArticles = [];
+  bool _isLoading = true;
   
   final List<String> _categories = [
     'All',
@@ -23,7 +28,30 @@ class _ArticlesPageState extends State<ArticlesPage> {
     'Preventive Care',
   ];
 
-  final List<Map<String, dynamic>> _allArticles = [
+  @override
+  void initState() {
+    super.initState();
+    _loadArticles();
+  }
+
+  Future<void> _loadArticles() async {
+    try {
+      final articles = await _dbService.getArticles();
+      setState(() {
+        _allArticles = articles;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading articles: $e')),
+        );
+      }
+    }
+  }
+
+  final List<Map<String, dynamic>> _mockArticles = [
     {
       'id': '1',
       'title': 'Understanding Child Fever',

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../services/authentication_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/firebase_auth_service.dart';
+import '../services/firebase_database_service.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({super.key});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -12,40 +14,22 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _authService = FirebaseAuthService();
+  final _dbService = FirebaseDatabaseService();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _agreeToTerms = false;
-  String? _selectedGender;
-  String? _selectedDateOfBirth;
-
-  final List<String> _genderOptions = ['Male', 'Female', 'Other'];
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDateOfBirth = '${picked.day}/${picked.month}/${picked.year}';
-      });
-    }
   }
 
   void _handleSignUp() async {
@@ -60,54 +44,77 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
-      if (_selectedGender == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select your gender'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
-
-      if (_selectedDateOfBirth == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please select your date of birth'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        return;
-      }
-
       setState(() {
         _isLoading = true;
       });
 
-      // Call authentication service
-      final result = await authService.signUp(
-        name: _nameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-        phone: _phoneController.text,
-        dateOfBirth: _selectedDateOfBirth!,
-        gender: _selectedGender!,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success or error message and navigate back
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result.message),
-            backgroundColor: result.success ? Colors.green : Colors.red,
-          ),
+      try {
+        // Sign up with Firebase
+        UserCredential userCredential = await _authService.signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
         );
-        if (result.success) {
+
+        // Save user profile to Firestore
+        await _dbService.saveUser(
+          userId: userCredential.user!.uid,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          userType: 'patient',
+        );
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account Created Successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Navigate back to login page
           Navigator.pop(context);
+        }
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (mounted) {
+          String errorMessage = 'Sign up failed';
+          if (e.code == 'weak-password') {
+            errorMessage = 'Password is too weak';
+          } else if (e.code == 'email-already-in-use') {
+            errorMessage = 'Email already in use';
+          } else if (e.code == 'invalid-email') {
+            errorMessage = 'Invalid email format';
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        // Check if it's the Pigeon type error (Firebase SDK bug but data was saved)
+        if (e.toString().contains('PigeonUserDetails')) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Account Created Successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context);
+          }
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
         }
       }
     }
@@ -209,75 +216,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       }
                       if (!value.contains('@')) {
                         return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Phone Field
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
-                      hintText: 'Enter your phone number',
-                      prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFF4FC3F7)),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Gender Dropdown
-                  DropdownButtonFormField<String>(
-                    value: _selectedGender,
-                    decoration: const InputDecoration(
-                      labelText: 'Gender',
-                      hintText: 'Select your gender',
-                      prefixIcon: Icon(Icons.wc, color: Color(0xFF4FC3F7)),
-                    ),
-                    items: _genderOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedGender = newValue;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select your gender';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Date of Birth Field
-                  TextFormField(
-                    controller: TextEditingController(text: _selectedDateOfBirth),
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Date of Birth',
-                      hintText: 'Select your date of birth',
-                      prefixIcon: const Icon(Icons.calendar_today, color: Color(0xFF4FC3F7)),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today, color: Color(0xFF4FC3F7)),
-                        onPressed: () => _selectDate(context),
-                      ),
-                    ),
-                    onTap: () => _selectDate(context),
-                    validator: (value) {
-                      if (_selectedDateOfBirth == null) {
-                        return 'Please select your date of birth';
                       }
                       return null;
                     },

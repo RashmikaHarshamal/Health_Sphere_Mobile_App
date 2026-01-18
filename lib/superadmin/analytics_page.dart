@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 class AnalyticsPage extends StatelessWidget {
-  const AnalyticsPage({Key? key}) : super(key: key);
+  const AnalyticsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +138,7 @@ class AnalyticsPage extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
