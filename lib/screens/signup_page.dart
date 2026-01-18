@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/authentication_service.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -11,20 +12,40 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _agreeToTerms = false;
+  String? _selectedGender;
+  String? _selectedDateOfBirth;
+
+  final List<String> _genderOptions = ['Male', 'Female', 'Other'];
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDateOfBirth = '${picked.day}/${picked.month}/${picked.year}';
+      });
+    }
   }
 
   void _handleSignUp() async {
@@ -39,27 +60,55 @@ class _SignUpPageState extends State<SignUpPage> {
         return;
       }
 
+      if (_selectedGender == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select your gender'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      if (_selectedDateOfBirth == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select your date of birth'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Call authentication service
+      final result = await authService.signUp(
+        name: _nameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        phone: _phoneController.text,
+        dateOfBirth: _selectedDateOfBirth!,
+        gender: _selectedGender!,
+      );
 
       setState(() {
         _isLoading = false;
       });
 
-      // Show success message and navigate back
+      // Show success or error message and navigate back
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account Created Successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.success ? Colors.green : Colors.red,
           ),
         );
-        // Navigate back to login page after successful signup
-        Navigator.pop(context);
+        if (result.success) {
+          Navigator.pop(context);
+        }
       }
     }
   }
@@ -160,6 +209,75 @@ class _SignUpPageState extends State<SignUpPage> {
                       }
                       if (!value.contains('@')) {
                         return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Phone Field
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                      hintText: 'Enter your phone number',
+                      prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFF4FC3F7)),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your phone number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Gender Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedGender,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender',
+                      hintText: 'Select your gender',
+                      prefixIcon: Icon(Icons.wc, color: Color(0xFF4FC3F7)),
+                    ),
+                    items: _genderOptions.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedGender = newValue;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Please select your gender';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Date of Birth Field
+                  TextFormField(
+                    controller: TextEditingController(text: _selectedDateOfBirth),
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Date of Birth',
+                      hintText: 'Select your date of birth',
+                      prefixIcon: const Icon(Icons.calendar_today, color: Color(0xFF4FC3F7)),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.calendar_today, color: Color(0xFF4FC3F7)),
+                        onPressed: () => _selectDate(context),
+                      ),
+                    ),
+                    onTap: () => _selectDate(context),
+                    validator: (value) {
+                      if (_selectedDateOfBirth == null) {
+                        return 'Please select your date of birth';
                       }
                       return null;
                     },
