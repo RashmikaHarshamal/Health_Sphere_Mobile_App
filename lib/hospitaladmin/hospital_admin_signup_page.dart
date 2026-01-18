@@ -1,6 +1,8 @@
 // lib/hospitaladmin/hospital_admin_signup_page.dart
 import 'package:flutter/material.dart';
 import 'hospital_admin_dashboard.dart';
+import '../services/hospital_management_service.dart';
+import '../services/firebase_auth_service.dart';
 
 class HospitalAdminSignUpPage extends StatefulWidget {
   const HospitalAdminSignUpPage({Key? key}) : super(key: key);
@@ -91,39 +93,84 @@ class _HospitalAdminSignUpPageState extends State<HospitalAdminSignUpPage> {
     }
 
     setState(() => _isLoading = true);
+
+    // Get current user (hospital admin)
+    final authService = FirebaseAuthService();
+    final currentUser = authService.currentUser;
     
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    if (currentUser == null) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please login first'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Register hospital
+    final result = await hospitalService.registerHospital(
+      adminId: currentUser.uid,
+      adminName: currentUser.displayName ?? 'Hospital Admin',
+      adminEmail: currentUser.email ?? '',
+      hospitalName: _hospitalNameController.text,
+      hospitalEmail: _hospitalEmailController.text,
+      hospitalPhone: _hospitalPhoneController.text,
+      hospitalAddress: _hospitalAddressController.text,
+      city: _hospitalCityController.text,
+      state: _hospitalStateController.text,
+      zipCode: _hospitalZipController.text,
+      registrationNumber: _registrationNumberController.text,
+      licenseNumber: _licenseNumberController.text,
+      establishedYear: int.parse(_establishedYearController.text),
+      hospitalType: _hospitalType ?? 'Private',
+      facilities: _facilities.entries.where((e) => e.value).map((e) => e.key).toList(),
+      totalBeds: int.parse(_totalBedsController.text),
+    );
     
     setState(() => _isLoading = false);
 
     if (mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30),
-              SizedBox(width: 12),
-              Text('Registration Successful'),
+      if (result.success) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 30),
+                SizedBox(width: 12),
+                Text('Registration Successful'),
+              ],
+            ),
+            content: const Text(
+              'Your hospital registration has been submitted successfully! '
+              'Your hospital ID is: Hospital registration pending. '
+              'Our team will review your application and get back to you within 24-48 hours.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HospitalAdminDashboard()),
+                  );
+                },
+                child: const Text('OK'),
+              ),
             ],
           ),
-          content: const Text(
-            'Your hospital registration has been submitted successfully. '
-            'Our team will review your application and get back to you within 24-48 hours.',
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: Colors.red,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back to login
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+        );
+      }
     }
   }
 
