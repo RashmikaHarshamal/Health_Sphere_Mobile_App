@@ -309,10 +309,21 @@ class FirebaseDatabaseService {
       final snapshot = await _firestore
           .collection('vaccinations')
           .where('patientId', isEqualTo: patientId)
-          .orderBy('vaccinationDate', descending: true)
           .get();
 
-      return snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+      final records = snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+      
+      // Sort in memory to avoid composite index requirement
+      records.sort((a, b) {
+        final aDate = a['vaccinationDate'] as String?;
+        final bDate = b['vaccinationDate'] as String?;
+        if (aDate == null && bDate == null) return 0;
+        if (aDate == null) return 1;
+        if (bDate == null) return -1;
+        return bDate.compareTo(aDate); // descending order
+      });
+      
+      return records;
     } catch (e) {
       throw Exception('Failed to get vaccination records: $e');
     }

@@ -4,6 +4,8 @@ import 'find_doctors_page.dart';
 import 'articles_page.dart';
 import 'article_details_page.dart';
 import 'vaccination_page.dart';
+import 'medicines_page.dart';
+import 'health_tips_page.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -433,6 +435,16 @@ Establishing healthy eating habits early helps children develop a positive relat
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const VaccinationPage()),
+                    );
+                  } else if (title == 'Medicines') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MedicinesPage()),
+                    );
+                  } else if (title == 'Health Tips') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HealthTipsPage()),
                     );
                  
                   } else {

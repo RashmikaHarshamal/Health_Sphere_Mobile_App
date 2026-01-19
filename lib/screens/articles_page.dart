@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'article_details_page.dart';
 import '../services/firebase_database_service.dart';
 
@@ -31,17 +32,530 @@ class _ArticlesPageState extends State<ArticlesPage> {
   @override
   void initState() {
     super.initState();
+    _addDefaultArticles();
     _loadArticles();
+  }
+
+  Future<void> _addDefaultArticles() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('articles')
+          .limit(1)
+          .get();
+      
+      if (snapshot.docs.isEmpty) {
+        // Add default articles
+        final defaultArticles = _getDefaultArticles();
+        for (var article in defaultArticles) {
+          await FirebaseFirestore.instance.collection('articles').add(article);
+        }
+      }
+    } catch (e) {
+      print('Error adding default articles: $e');
+    }
+  }
+
+  List<Map<String, dynamic>> _getDefaultArticles() {
+    return [
+      {
+        'title': 'Understanding Child Fever: A Parent\'s Guide',
+        'category': 'Pediatrics',
+        'readTime': '5 min read',
+        'likes': 234,
+        'views': 1542,
+        'date': 'Jan 15, 2026',
+        'author': 'Dr. Sarah Johnson',
+        'isNew': true,
+        'summary': 'Learn when to worry about your child\'s fever and effective home remedies to help them feel better.',
+        'content': '''Fever is one of the most common reasons parents seek medical attention for their children. While it can be concerning, fever is actually a sign that your child\'s body is fighting an infection.
+
+**When to Seek Immediate Care:**
+• Fever above 104°F (40°C)
+• Child is under 3 months old with any fever
+• Fever lasts more than 3 days
+• Child is lethargic or unresponsive
+• Difficulty breathing or chest pain
+• Severe headache or stiff neck
+
+**Home Care Tips:**
+1. Keep your child hydrated with water, clear broths, or electrolyte solutions
+2. Dress them in light clothing
+3. Use acetaminophen or ibuprofen as directed by your pediatrician
+4. Monitor temperature regularly
+5. Allow rest and avoid strenuous activities
+
+**Common Myths:**
+• Myth: All fevers are dangerous
+• Reality: Fever itself is not harmful; it\'s the body\'s natural defense
+
+Always trust your instincts as a parent. If something doesn\'t feel right, contact your healthcare provider.''',
+        'iconName': 'child_care',
+        'colorValue': '0xFFE91E63',
+      },
+      {
+        'title': 'Managing Diabetes: Your Complete Guide',
+        'category': 'Chronic Illness',
+        'readTime': '8 min read',
+        'likes': 189,
+        'views': 2341,
+        'date': 'Jan 14, 2026',
+        'author': 'Dr. Michael Chen',
+        'isNew': true,
+        'summary': 'Essential strategies for living well with diabetes, from blood sugar monitoring to lifestyle changes.',
+        'content': '''Managing diabetes effectively requires a comprehensive approach combining medication, diet, exercise, and regular monitoring.
+
+**Blood Sugar Monitoring:**
+• Check levels as recommended by your doctor
+• Keep a log of your readings
+• Understand your target ranges
+• Know the signs of high and low blood sugar
+
+**Dietary Guidelines:**
+1. Focus on whole grains, vegetables, and lean proteins
+2. Monitor carbohydrate intake
+3. Eat regular meals at consistent times
+4. Limit sugary drinks and processed foods
+5. Stay hydrated with water
+
+**Exercise Benefits:**
+• Improves insulin sensitivity
+• Helps maintain healthy weight
+• Reduces cardiovascular risk
+• Aim for 150 minutes of moderate activity weekly
+
+**Medication Management:**
+• Take medications as prescribed
+• Never skip doses
+• Know potential side effects
+• Keep medications properly stored
+
+**Regular Check-ups:**
+Schedule regular appointments with your healthcare team including your doctor, dietitian, and diabetes educator.
+
+Remember: Diabetes is manageable with the right approach and support.''',
+        'iconName': 'favorite_border',
+        'colorValue': '0xFFF44336',
+      },
+      {
+        'title': '10 Ways to Boost Your Mental Health',
+        'category': 'Mental Health',
+        'readTime': '6 min read',
+        'likes': 312,
+        'views': 2987,
+        'date': 'Jan 13, 2026',
+        'author': 'Dr. Emily Thompson',
+        'isNew': false,
+        'summary': 'Practical strategies to improve your emotional well-being and build resilience in daily life.',
+        'content': '''Mental health is just as important as physical health. Here are evidence-based strategies to enhance your emotional well-being.
+
+**1. Practice Mindfulness:**
+• Spend 10 minutes daily in meditation
+• Focus on the present moment
+• Try deep breathing exercises
+
+**2. Stay Connected:**
+• Maintain relationships with friends and family
+• Join support groups or clubs
+• Reach out when you need help
+
+**3. Get Regular Exercise:**
+• Physical activity releases endorphins
+• Even a 20-minute walk helps
+• Find activities you enjoy
+
+**4. Prioritize Sleep:**
+• Aim for 7-9 hours nightly
+• Maintain a consistent sleep schedule
+• Create a relaxing bedtime routine
+
+**5. Eat Nutritiously:**
+• Balanced diet supports brain health
+• Omega-3 fatty acids are particularly beneficial
+• Limit caffeine and alcohol
+
+**6. Set Realistic Goals:**
+• Break large tasks into smaller steps
+• Celebrate small achievements
+• Be kind to yourself
+
+**7. Limit Screen Time:**
+• Take regular breaks from devices
+• Avoid screens before bedtime
+• Engage in offline activities
+
+**8. Practice Gratitude:**
+• Keep a gratitude journal
+• Focus on positive aspects of life
+• Express appreciation to others
+
+**9. Learn New Skills:**
+• Stimulate your mind with new challenges
+• Take up a hobby or learn a language
+• Stay curious and engaged
+
+**10. Seek Professional Help:**
+• Don\'t hesitate to talk to a therapist
+• Mental health professionals can provide valuable support
+• Therapy is a sign of strength, not weakness
+
+Remember: Taking care of your mental health is an ongoing process. Be patient with yourself.''',
+        'iconName': 'psychology',
+        'colorValue': '0xFF9C27B0',
+      },
+      {
+        'title': 'Heart-Healthy Diet: What You Need to Know',
+        'category': 'Heart Health',
+        'readTime': '7 min read',
+        'likes': 276,
+        'views': 2156,
+        'date': 'Jan 12, 2026',
+        'author': 'Dr. James Wilson',
+        'isNew': false,
+        'summary': 'Discover the best foods for cardiovascular health and learn which ones to avoid.',
+        'content': '''A heart-healthy diet is one of the most powerful tools for preventing heart disease and improving cardiovascular health.
+
+**Foods to Include:**
+
+**Fruits and Vegetables:**
+• Rich in vitamins, minerals, and antioxidants
+• Aim for variety and color
+• Fresh, frozen, or canned (low sodium) all count
+
+**Whole Grains:**
+• Oats, brown rice, quinoa, whole wheat
+• Higher in fiber than refined grains
+• Help lower cholesterol
+
+**Healthy Fats:**
+• Olive oil, avocados, nuts, seeds
+• Fatty fish (salmon, mackerel, sardines)
+• Omega-3 fatty acids reduce inflammation
+
+**Lean Proteins:**
+• Skinless poultry, fish, legumes
+• Plant-based proteins are excellent choices
+• Limit red meat consumption
+
+**Foods to Limit:**
+• Saturated and trans fats
+• High-sodium foods
+• Added sugars
+• Processed meats
+• Fried foods
+
+**Practical Tips:**
+1. Read nutrition labels carefully
+2. Cook at home more often
+3. Use herbs and spices instead of salt
+4. Choose baking, grilling, or steaming over frying
+5. Stay hydrated with water
+
+**Portion Control:**
+• Use smaller plates
+• Fill half your plate with vegetables
+• Listen to hunger cues
+• Eat slowly and mindfully
+
+Small, consistent changes in your diet can lead to significant improvements in heart health over time.''',
+        'iconName': 'favorite',
+        'colorValue': '0xFFE91E63',
+      },
+      {
+        'title': 'The Importance of Regular Health Screenings',
+        'category': 'Preventive Care',
+        'readTime': '5 min read',
+        'likes': 198,
+        'views': 1876,
+        'date': 'Jan 11, 2026',
+        'author': 'Dr. Lisa Anderson',
+        'isNew': false,
+        'summary': 'Learn which health screenings you need and when to schedule them for optimal preventive care.',
+        'content': '''Regular health screenings are crucial for catching potential health issues early when they\'re most treatable.
+
+**Essential Screenings by Age:**
+
+**Ages 18-39:**
+• Blood pressure check (every 2 years)
+• Cholesterol screening (every 5 years)
+• Diabetes screening (if at risk)
+• Dental checkups (twice yearly)
+• Eye exams (every 2 years)
+• Skin cancer screening (annually)
+
+**Ages 40-64:**
+• All screenings above, plus:
+• Mammogram (women, starting at 40)
+• Colorectal cancer screening (starting at 45)
+• Prostate screening discussion (men, starting at 50)
+• Bone density scan (women at risk)
+
+**Ages 65+:**
+• All previous screenings
+• Increased frequency for some tests
+• Hearing and vision tests
+• Fall risk assessment
+• Cognitive screening
+
+**Why Screenings Matter:**
+• Early detection saves lives
+• Many conditions have no symptoms initially
+• Treatment is often more effective when caught early
+• Establishes health baselines
+• Provides peace of mind
+
+**Preparing for Screenings:**
+1. Know your family medical history
+2. List current medications and supplements
+3. Prepare questions for your doctor
+4. Follow pre-screening instructions
+5. Schedule follow-up as needed
+
+**Talk to Your Doctor:**
+Your screening schedule may vary based on your personal and family health history, lifestyle factors, and current health status.
+
+Don\'t delay preventive care—it\'s an investment in your long-term health.''',
+        'iconName': 'health_and_safety',
+        'colorValue': '0xFF2196F3',
+      },
+      {
+        'title': 'Nutrition for Women: Essential Nutrients',
+        'category': 'Women\'s Health',
+        'readTime': '6 min read',
+        'likes': 245,
+        'views': 2234,
+        'date': 'Jan 10, 2026',
+        'author': 'Dr. Rachel Green',
+        'isNew': false,
+        'summary': 'Understand the unique nutritional needs of women at different life stages.',
+        'content': '''Women have unique nutritional needs that change throughout their lives. Meeting these needs is essential for optimal health.
+
+**Key Nutrients for Women:**
+
+**Iron:**
+• Crucial during menstruating years
+• Found in red meat, beans, fortified cereals
+• Pair with vitamin C for better absorption
+• Women need 18mg daily (ages 19-50)
+
+**Calcium:**
+• Essential for bone health
+• Aim for 1000-1200mg daily
+• Sources: dairy, leafy greens, fortified foods
+• Prevent osteoporosis later in life
+
+**Folic Acid:**
+• Critical for women of childbearing age
+• Prevents birth defects
+• 400-800 mcg daily recommended
+• Found in leafy greens, citrus, beans
+
+**Vitamin D:**
+• Works with calcium for bone health
+• Supports immune function
+• Many women are deficient
+• Get from sunlight, fatty fish, fortified foods
+
+**Omega-3 Fatty Acids:**
+• Support heart and brain health
+• Reduce inflammation
+• Found in fatty fish, walnuts, flaxseeds
+
+**Nutritional Needs by Life Stage:**
+
+**Reproductive Years:**
+• Focus on iron and folic acid
+• Maintain healthy weight
+• Stay active
+
+**Pregnancy & Breastfeeding:**
+• Increased calorie needs
+• Higher requirements for most nutrients
+• Prenatal vitamins recommended
+
+**Menopause:**
+• Calcium and vitamin D become even more important
+• May need fewer calories
+• Plant-based proteins beneficial
+
+**Practical Tips:**
+1. Eat a variety of colorful fruits and vegetables
+2. Choose whole grains over refined
+3. Include lean protein at each meal
+4. Stay hydrated
+5. Limit processed foods
+6. Consider a multivitamin if diet is inadequate
+
+Consult with a healthcare provider or registered dietitian for personalized nutrition advice.''',
+        'iconName': 'female',
+        'colorValue': '0xFFE91E63',
+      },
+      {
+        'title': 'Building an Effective Fitness Routine',
+        'category': 'Fitness',
+        'readTime': '7 min read',
+        'likes': 356,
+        'views': 3421,
+        'date': 'Jan 9, 2026',
+        'author': 'Dr. Mark Stevens',
+        'isNew': false,
+        'summary': 'Create a balanced exercise program that fits your lifestyle and fitness goals.',
+        'content': '''A well-rounded fitness routine includes cardiovascular exercise, strength training, and flexibility work.
+
+**Components of Fitness:**
+
+**1. Cardiovascular Exercise:**
+• Strengthens heart and lungs
+• Burns calories
+• Improves endurance
+• Examples: walking, running, cycling, swimming
+• Aim for 150 minutes moderate-intensity weekly
+
+**2. Strength Training:**
+• Builds muscle mass
+• Increases metabolism
+• Strengthens bones
+• Improves balance
+• Train all major muscle groups 2-3 times per week
+
+**3. Flexibility and Balance:**
+• Stretching improves range of motion
+• Reduces injury risk
+• Balance exercises prevent falls
+• Include yoga or tai chi
+
+**Creating Your Routine:**
+
+**Beginner (Weeks 1-4):**
+• 3 days cardio (20-30 minutes)
+• 2 days strength training (full body)
+• Daily stretching (5-10 minutes)
+
+**Intermediate (Months 2-3):**
+• 4 days cardio (30-45 minutes)
+• 3 days strength training (split routine)
+• 15 minutes flexibility work
+
+**Advanced (Month 4+):**
+• 5 days mixed training
+• Higher intensity intervals
+• Sport-specific training
+• Active recovery days
+
+**Tips for Success:**
+1. Start slowly and progress gradually
+2. Listen to your body
+3. Mix up activities to prevent boredom
+4. Set realistic, specific goals
+5. Track your progress
+6. Find a workout buddy
+7. Schedule exercise like appointments
+8. Warm up before and cool down after
+
+**Common Mistakes to Avoid:**
+• Doing too much too soon
+• Skipping warm-ups
+• Poor form
+• Not allowing recovery time
+• Ignoring pain
+
+**Staying Motivated:**
+• Choose activities you enjoy
+• Celebrate small wins
+• Join a class or group
+• Reward yourself (non-food)
+• Remember why you started
+
+Consistency is more important than intensity. Find what works for you and make it a habit.''',
+        'iconName': 'fitness_center',
+        'colorValue': '0xFF4CAF50',
+      },
+      {
+        'title': 'Sleep Hygiene: Better Rest for Better Health',
+        'category': 'Preventive Care',
+        'readTime': '5 min read',
+        'likes': 289,
+        'views': 2567,
+        'date': 'Jan 8, 2026',
+        'author': 'Dr. Patricia Moore',
+        'isNew': false,
+        'summary': 'Improve your sleep quality with evidence-based strategies and healthy sleep habits.',
+        'content': '''Quality sleep is essential for physical health, mental clarity, and emotional well-being. Here\'s how to improve your sleep.
+
+**Why Sleep Matters:**
+• Repairs and restores body tissues
+• Consolidates memories
+• Regulates hormones
+• Supports immune function
+• Affects mood and mental health
+
+**Sleep Hygiene Basics:**
+
+**1. Consistent Schedule:**
+• Go to bed and wake up at the same time daily
+• Even on weekends
+• Helps regulate your body clock
+
+**2. Create a Sleep-Friendly Environment:**
+• Keep bedroom cool (60-67°F)
+• Use blackout curtains
+• Minimize noise
+• Invest in comfortable mattress and pillows
+
+**3. Bedtime Routine:**
+• Start winding down 30-60 minutes before bed
+• Dim lights
+• Read a book
+• Take a warm bath
+• Practice relaxation techniques
+
+**4. What to Avoid:**
+• Caffeine after 2pm
+• Large meals close to bedtime
+• Alcohol (disrupts sleep cycles)
+• Screens 1 hour before bed (blue light)
+• Vigorous exercise late in evening
+
+**5. During the Day:**
+• Get natural sunlight exposure
+• Exercise regularly (but not too late)
+• Limit naps to 20-30 minutes
+• Manage stress
+
+**When to Seek Help:**
+Consult a doctor if you experience:
+• Chronic insomnia
+• Loud snoring or breathing pauses
+• Excessive daytime sleepiness
+• Difficulty staying asleep
+• Restless legs at night
+
+**Sleep Requirements:**
+• Adults: 7-9 hours
+• Teenagers: 8-10 hours
+• Children: 9-12 hours
+
+Good sleep is not a luxury—it\'s a necessity for health. Prioritize it as you would diet and exercise.''',
+        'iconName': 'bedtime',
+        'colorValue': '0xFF3F51B5',
+      },
+    ];
   }
 
   Future<void> _loadArticles() async {
     try {
-      final articles = await _dbService.getArticles();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('articles')
+          .get();
+      
       setState(() {
-        _allArticles = articles;
+        _allArticles = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return {...data, 'id': doc.id};
+        }).toList();
         _isLoading = false;
       });
     } catch (e) {
+      print('Error loading articles: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -487,6 +1001,39 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
     return _allArticles.where((article) => article['isNew'] == true).toList();
   }
 
+  IconData _parseIcon(String? iconName) {
+    switch (iconName) {
+      case 'child_care':
+        return Icons.child_care;
+      case 'favorite_border':
+        return Icons.favorite_border;
+      case 'psychology':
+        return Icons.psychology;
+      case 'favorite':
+        return Icons.favorite;
+      case 'health_and_safety':
+        return Icons.health_and_safety;
+      case 'female':
+        return Icons.female;
+      case 'fitness_center':
+        return Icons.fitness_center;
+      case 'bedtime':
+        return Icons.bedtime;
+      default:
+        return Icons.article;
+    }
+  }
+
+  Color _parseColor(String? colorValue) {
+    if (colorValue == null || colorValue.isEmpty) return Colors.blue;
+    try {
+      final hexValue = colorValue.startsWith('0x') ? colorValue : '0x$colorValue';
+      return Color(int.parse(hexValue));
+    } catch (e) {
+      return Colors.blue;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -668,6 +1215,20 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
   }
 
   Widget _buildNewArticleCard(Map<String, dynamic> article) {
+    IconData icon;
+    if (article.containsKey('image') && article['image'] is IconData) {
+      icon = article['image'] as IconData;
+    } else {
+      icon = _parseIcon(article['iconName']?.toString());
+    }
+    
+    Color color;
+    if (article.containsKey('color') && article['color'] is Color) {
+      color = article['color'] as Color;
+    } else {
+      color = _parseColor(article['colorValue']?.toString());
+    }
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -684,8 +1245,8 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              (article['color'] as Color).withOpacity(0.7),
-              article['color'] as Color,
+              color.withOpacity(0.7),
+              color,
             ],
           ),
           boxShadow: [
@@ -703,7 +1264,7 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
             children: [
               Row(
                 children: [
-                  Icon(article['image'], color: Colors.white, size: 32),
+                  Icon(icon, color: Colors.white, size: 32),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -764,6 +1325,20 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
   }
 
   Widget _buildArticleCard(Map<String, dynamic> article) {
+    IconData icon;
+    if (article.containsKey('image') && article['image'] is IconData) {
+      icon = article['image'] as IconData;
+    } else {
+      icon = _parseIcon(article['iconName']?.toString());
+    }
+    
+    Color color;
+    if (article.containsKey('color') && article['color'] is Color) {
+      color = article['color'] as Color;
+    } else {
+      color = _parseColor(article['colorValue']?.toString());
+    }
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -794,8 +1369,8 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    (article['color'] as Color).withOpacity(0.6),
-                    article['color'] as Color,
+                    color.withOpacity(0.6),
+                    color,
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -807,7 +1382,7 @@ Remember: The best exercise is the one you'll actually do consistently. Find wha
                 children: [
                   Center(
                     child: Icon(
-                      article['image'],
+                      icon,
                       size: 50,
                       color: Colors.white,
                     ),
